@@ -1,0 +1,65 @@
+/* ImageGallery.css */
+
+.image-gallery-container {
+    width: 400px;
+    margin: 20px auto;
+    text-align: center;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .profile-picture {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .username {
+    font-weight: bold;
+  }
+  
+  .image-container {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  
+  .gallery-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .caption {
+    margin-top: 10px;
+  }
+  
+  .button-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    background-color: #d32f2f;
+  }
+  

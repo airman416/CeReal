@@ -1,22 +1,38 @@
+import React, { useState, createContext } from 'react';
 import { BrowserRouter as Router} from 'react-router-dom';
 import {Routes, Route} from 'react-router-dom';
-import UploadImage from './components/UploadImage';
-import Signup from './components/Signup';
-import Login from './components/Login';
+import Signup from './components/authentication/Signup';
+import Login from './components/authentication/Login';
 import Home from './components/Home';
+import NavigationBar from './components/NavigationBar';
+import Logout from './components/authentication/Logout';
+import Profile from './components/Profile';
 
+export const UserContext = createContext(null);
+
+/**
+ * Global app
+ * 
+ * @returns router
+ */
 function App() {
+  const [user, setUser] = useState({});
+
   return (
     <Router>
       <div>
+        <UserContext.Provider value={{ user: user, setUser: setUser }}>
         <section>
+          <NavigationBar />
           <Routes>
-            <Route path="/upload" element={<UploadImage/>}/>
             <Route path="/signup" element={<Signup/>}/>
             <Route path="/login" element={<Login/>}/>
-            <Route path="/home" element={<Home/>}/>
+            <Route path="/" element={<Home/>}/>
+            <Route path="/profile" element={<Profile/>}/>
+            <Route path="/logout" element={<Logout/>}/>
           </Routes>
         </section>
+        </UserContext.Provider>
       </div>
     </Router>
   )

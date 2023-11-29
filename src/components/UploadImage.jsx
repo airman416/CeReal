@@ -1,17 +1,34 @@
-import './UploadImage.css';
-import { useState, useEffect } from 'react';
-import { storage } from '../firebase';
-import { ref, uploadBytes, listAll, getDownloadURL } from 'firebase/storage';
+import './css/UploadImage.css';
+import { useState, useEffect, useContext } from 'react';
+import { storage, db } from '../firebase';
+import { ref, getDownloadURL, uploadString } from 'firebase/storage';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { v4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../App';
+import ImageGallery from './ImageGallery';
+import ScreenUploader from './ScreenUploader';
 
-
-const UploadImage = (props) => {
+/**
+ * Includes box for image upload and image gallery below it
+ * 
+ * TODO: move image gallery to Home
+ * @returns view
+ */
+const UploadImage = () => {
     
+    // image file to upload
     const [imageUpload, setImageUpload] = useState(null);
+    // list of images displayed on the webpage
     const [imageList, setImageList] = useState([]);
-    const imageListRef = ref(storage, `screens/`);
-    const user = props.user;
+    const { user, setUser } = useContext(UserContext);
+    const navigate = useNavigate();
     
+    // callback from ScreenUploader
+    const uploadCallBack = (dataPNG, caption) => {
+        uploadImage(dataPNG, caption);
+    }
+
     // sets the imageUpload state to the selected file
     const fileSelectedHandler = event => {
         const file = event.target.files[0];
@@ -23,40 +40,76 @@ const UploadImage = (props) => {
             alert("Not an image!");
         }
     }
+
+    // gets the screens from database
+    // TODO: add limit
+    const getScreens = async () => {
+        const querySnapshot = await getDocs(collection(db, "screens"));
+        querySnapshot.forEach((doc) => {
+            console.log(doc.id, " => ", doc.data());
+            setImageList([]);
+            setImageList((prev) => [...prev, doc.data()]);
+        });
+    }
     
-    
-    // takes imageUpload state and ssends it to firebase storage
-    const uploadImage = () => {
-        if (imageUpload == null) return;
-        const imageRef = ref(storage, `screens/${imageUpload.name + v4()}`);
-        uploadBytes(imageRef, imageUpload).then((snapshot) => {
+    // takes imageUpload state and sends it to firebase storage
+    const uploadImage = (dataPNG, caption) => {
+        // if (imageUpload == null) return;
+        console.log("Trying to upload", dataPNG);
+        const imageId = v4();
+        const imageRef = ref(storage, `screens/${imageId}`);
+        uploadString(imageRef, dataPNG, 'data_url').then((snapshot) => {
             alert("Image Uploaded");
             setImageUpload(null);
             getDownloadURL(snapshot.ref).then((url) => {
-                setImageList((prev) => [...prev, url]);
+                addImageToDatabase(imageId, url, caption);
             });
+        }).catch((error) => {
+            console.log(error);
         })
+    }
+
+    const uploadScreen = () => {
+        
+    }
+
+    // adds the image along with its data to firestore
+    const addImageToDatabase = async (imageId, url, caption) => {
+        console.log("Entered");
+        console.log(user);
+        try {
+            const screen = {
+                id: imageId,
+                userId: user.uid,
+                userEmail: user.email,
+                userName: user.displayName,
+                screenUrl: url,
+                datetime: new Date(),
+                caption: caption
+            }
+            const docRef = await addDoc(collection(db, "screens"), screen);
+            
+            setImageList((prev) => [...prev, screen])
+            console.log(docRef);
+            console.log("Document written with ID: ", docRef.id);
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
     }
     
     useEffect(() => {
-        listAll(imageListRef).then((response) => {
-            response.items.forEach((item) => {
-                getDownloadURL(item).then((url) => {
-                    setImageList((prev) => [...prev, url]);
-                })
-            })
-        })
-    }, []);
-    
+        if (!user) {
+            navigate("/login");
+        }
+    }, [user, navigate]);
+
     return (
         <div className="UploadImage">
-            <input type="file" accept="image/*" onChange={fileSelectedHandler} />
+            {/* <input type="file" accept="image/*" onChange={fileSelectedHandler} />
             <button onClick={uploadImage}>Upload</button>
-            <div>
-                {imageList.map((url) => {
-                    return <img src={url}/>
-                })}
-            </div>
+            <button onClick={uploadScreen}>Screenshot</button> */}
+            <ScreenUploader uploadCallBack={uploadCallBack}/>
+            <ImageGallery imageList={{ imageList, setImageList }} getScreens={getScreens}/>
         </div>
     );
 }
