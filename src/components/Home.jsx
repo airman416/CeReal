@@ -3,10 +3,10 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase";
 import { UserContext } from "../App";
 import UploadImage from "./UploadImage";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, redirect } from "react-router-dom";
 
 /**
- * Homepage
+ * Main homepage
  * 
  * @returns Image upload box, gallery
  */
@@ -15,6 +15,9 @@ const Home = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // if (!user) {
+    //   navigate('/login');
+    // }
     onAuthStateChanged(auth, (user) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
@@ -25,10 +28,11 @@ const Home = () => {
       } else {
         // User is signed out
         console.log("user is logged out");
-        navigate('/login');
+        // navigate('/login');
+        // navigate('/login');
       }
     });
-  }, []);
+  }, [user]);
 
   if (user) {
     return (

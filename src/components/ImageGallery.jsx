@@ -21,6 +21,7 @@ import "./css/ImageGallery.css";
 const ImageGallery = (props) => {
   const { imageList, setImageList } = props.imageList;
   const { user, setUser } = useContext(UserContext);
+  const blur = props.blur;
 
   /**
    * Updates images stored in the state
@@ -44,7 +45,7 @@ const ImageGallery = (props) => {
     qSnap.forEach((doc) => {
       deleteDoc(doc.ref);
     });
-    // TODO: use filter instead
+
     const imageRef = ref(storage, `screens/${id}`);
 
     // Delete the file
@@ -56,12 +57,15 @@ const ImageGallery = (props) => {
         console.log(error);
       });
 
+    // ! use filter instead as this is an expensive operation
     setImageList([]);
     getScreens();
   };
 
   useEffect(() => {
-    getScreens();
+    if (user) {
+      getScreens();
+    }
   }, []);
 
   return (
@@ -72,14 +76,15 @@ const ImageGallery = (props) => {
             <div className="user-info">
               <img
                 className="profile-picture"
-                src={null}
+                src={"https://firebasestorage.googleapis.com/v0/b/computer-bereal-f0c5e.appspot.com/o/screens%2Fdefault.png?alt=media&token=c8f734c4-a25c-442d-a482-8f2bd240603d"}
                 alt="Profile"
                 // key={data.userId}
               />
               <span className="username">{data.userEmail}</span>
             </div>
             <div className="image-container">
-              <img className="gallery-image" src={data.screenUrl} alt={""} />
+              <img className="gallery-image" src={data.screenUrl} alt={""} 
+                style={{ "-webkit-filter": blur ? 'blur(8px)': 'blur(0px)'}}/>
               <div className="caption">{data.caption}</div>
               {console.log("User", data.userId, "Signed in", user.uid)}
               {data.userId === user.uid && (
